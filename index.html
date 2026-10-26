@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chamada Escolar CCCA Centro</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brand:   { DEFAULT: '#1E3A5F', light: '#2C4E7C', dark: '#142943' },
+            aviso:   { DEFAULT: '#F5A623' },
+            presente:{ DEFAULT: '#16A34A', dark: '#15803D' },
+            falta:   { DEFAULT: '#DC2626', dark: '#B91C1C' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    html { font-family: 'Inter', sans-serif; }
+    .btn-toggle {
+      transition: transform .08s ease, background-color .15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-toggle:active { transform: scale(0.96); }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 8px; }
+
+    .logo-ccca-header {
+      filter: brightness(0) invert(1);
+    }
+    .relatorios-compacto .rel-filtros { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (max-width: 640px) {
+      .relatorios-compacto .rel-filtros { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body class="bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col justify-between">
+
+  <!-- ===================== TOPO FIXO ===================== -->
+  <header class="bg-brand dark:bg-brand-dark text-white px-4 py-3 flex items-center justify-between sticky top-0 z-20 shadow-md">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center font-bold text-lg">
+        📚
+      </div>
+      <div>
+        <h1 class="text-base font-bold leading-tight">CCCA Centro</h1>
+        <p class="text-xs text-slate-300">Sistema de Chamada Escolar</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <span id="usuario-logado" class="text-xs font-medium bg-white/10 px-2.5 py-1 rounded-full hidden sm:inline-block"></span>
+      <button id="btn-dark-toggle" class="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm transition" title="Alternar Tema">🌙</button>
+      <button id="btn-logout" class="hidden bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">Sair</button>
+    </div>
+  </header>
+
+  <!-- ===================== CONTAINER PRINCIPAL ===================== -->
+  <main id="app" class="p-4 max-w-4xl mx-auto w-full flex-1"></main>
+
+  <!-- ===================== TOAST NOTIFICATION ===================== -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-2.5 rounded-xl shadow-xl text-sm font-medium transition-opacity duration-300 opacity-0 pointer-events-none z-50"></div>
+
+  <!-- ===================== TEMPLATES HTML ===================== -->
+
+  <!-- Template: LOGIN -->
+  <template id="tpl-login">
+    <div class="max-w-md mx-auto my-8 sm:my-16 bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-brand text-white rounded-2xl mx-auto flex items-center justify-center text-3xl font-extrabold mb-3 shadow-md">
+          CC
+        </div>
+        <h2 class="text-2xl font-bold text-brand dark:text-white">Acesso ao Sistema</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Insira suas credenciais para continuar</p>
+      </div>
+
+      <div id="login-erro" class="hidden mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 text-xs rounded-xl"></div>
+
+      <form id="form-login" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-300 mb-1">Usuário</label>
+          <input name="usuario" type="text" required placeholder="Digite seu usuário" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-600 dark:text-slate-300 mb-1">Senha</label>
+          <input name="senha" type="password" required placeholder="••••••••" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand" />
+        </div>
+        <button type="submit" class="w-full bg-brand hover:bg-brand-light text-white font-semibold py-3 rounded-xl shadow-md transition text-sm">Entrar no Sistema</button>
+      </form>
+
+      <div class="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700 text-xs text-slate-400 text-center">
+        <p><strong>Acesso Demo:</strong></p>
+        <p>Admin: <code>admin</code> / <code>123456</code></p>
+        <p>Professor: <code>prof1</code> / <code>123456</code></p>
+      </div>
+    </div>
+  </template>
+
+  <!-- Template: PROFESSOR HOME -->
+  <template id="tpl-professor-home">
+    <div class="space-y-6">
+      <section>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">📌 Mural de Avisos</h2>
+        <div id="mural" class="space-y-2"></div>
+      </section>
+
+      <section>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Minhas Turmas</h2>
+          <span id="dia-atual" class="text-xs bg-slate-200 dark:bg-slate-700 font-semibold px-2.5 py-1 rounded-full text-slate-700 dark:text-slate-200"></span>
+        </div>
+        <div id="lista-turmas" class="grid sm:grid-cols-2 gap-3"></div>
+      </section>
+    </div>
+  </template>
+
+  <!-- Template: CARD TURMA -->
+  <template id="tpl-turma-card">
+    <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between gap-3">
+      <div>
+        <p class="font-bold text-slate-800 dark:text-white text-base"></p>
+        <p class="turma-horario text-xs text-slate-500 dark:text-slate-400 mt-0.5"></p>
+      </div>
+      <button class="bg-brand hover:bg-brand-light text-white text-xs font-semibold px-4 py-2.5 rounded-lg shadow transition shrink-0">Realizar Chamada</button>
+    </div>
+  </template>
+
+  <!-- Template: CHAMADA (Mobile-First) -->
+  <template id="tpl-chamada">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+        <div>
+          <button id="btn-voltar-turmas" class="text-xs text-brand dark:text-slate-300 font-semibold hover:underline mb-1 inline-block">← Voltar para turmas</button>
+          <h2 id="chamada-titulo" class="text-lg font-bold text-slate-800 dark:text-white"></h2>
+          <p id="chamada-data" class="text-xs text-slate-500 dark:text-slate-400"></p>
+        </div>
+        <button id="btn-marcar-todos-presentes" class="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-semibold px-3 py-2 rounded-lg border border-emerald-300 dark:border-emerald-700">Todos Presentes</button>
+      </div>
+
+      <div id="lista-chamada" class="space-y-2"></div>
+
+      <button id="btn-salvar-chamada" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition text-sm">💾 Salvar Chamada</button>
+    </div>
+  </template>
+
+  <!-- Template: LINHA ALUNO CHAMADA -->
+  <template id="tpl-aluno-linha">
+    <div class="aluno-linha bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between gap-2">
+      <span class="aluno-nome font-semibold text-sm text-slate-800 dark:text-slate-100 truncate"></span>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button class="btn-presente btn-toggle w-20 py-2 rounded-lg border border-emerald-500 text-xs font-bold transition">Presente</button>
+        <button class="btn-falta btn-toggle w-20 py-2 rounded-lg border border-red-500 text-xs font-bold transition">Falta</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Template: PAINEL ADMIN -->
+  <template id="tpl-admin-home">
+    <div class="space-y-4">
+      <!-- Abas de Navegação -->
+      <div class="flex gap-1.5 overflow-x-auto pb-1 text-xs font-semibold">
+        <button data-tab="geral" class="admin-tab px-3.5 py-2 rounded-xl transition shadow-sm shrink-0">📋 Visão Geral</button>
+        <button data-tab="professores" class="admin-tab px-3.5 py-2 rounded-xl transition shadow-sm shrink-0">👨‍🏫 Professores</button>
+        <button data-tab="turmas" class="admin-tab px-3.5 py-2 rounded-xl transition shadow-sm shrink-0">🏫 Turmas</button>
+        <button data-tab="alunos" class="admin-tab px-3.5 py-2 rounded-xl transition shadow-sm shrink-0">🎓 Alunos</button>
+        <button data-tab="avisos" class="admin-tab px-3.5 py-2 rounded-xl transition shadow-sm shrink-0">📌 Avisos</button>
+        <button data-tab="relatorios" class="admin-tab px-3.5 py-2 rounded-xl transition shadow-sm shrink-0">📊 Relatórios</button>
+      </div>
+
+      <div id="admin-conteudo"></div>
+    </div>
+  </template>
+
+  <!-- Template: PAINEL SEÇÃO ADMIN -->
+  <template id="tpl-admin-secao">
+    <div class="bg-white dark:bg-slate-800 p-4 sm:p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 id="secao-titulo" class="text-base font-bold text-slate-800 dark:text-white"></h3>
+        <button id="btn-novo" class="bg-brand hover:bg-brand-light text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow transition">+ Novo Registro</button>
+      </div>
+
+      <div id="secao-form-wrap" class="hidden p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50"></div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr id="tabela-cabecalho" class="border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"></tr>
+          </thead>
+          <tbody id="tabela-corpo"></tbody>
+        </table>
+      </div>
+    </div>
+  </template>
+
+  <!-- Template: VISÃO GERAL ADMIN -->
+  <template id="tpl-admin-visao-geral">
+    <div class="space-y-4">
+      <!-- Indicadores -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+          <p class="text-2xl font-black text-brand dark:text-white" id="vg-total-professores">0</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Professores</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+          <p class="text-2xl font-black text-brand dark:text-white" id="vg-total-turmas">0</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Turmas</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+          <p class="text-2xl font-black text-brand dark:text-white" id="vg-total-alunos">0</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Alunos</p>
+        </div>
+        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-center">
+          <p class="text-2xl font-black text-brand dark:text-white" id="vg-total-avisos">0</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Avisos</p>
+        </div>
+      </div>
+
+      <!-- Campo de Busca Global -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between gap-3">
+        <input id="vg-busca" type="text" placeholder="🔍 Buscar por professor, turma ou aluno..." class="w-full bg-slate-50 dark:bg-slate-700/60 border border-slate-300 dark:border-slate-600 rounded-xl px-4 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand" />
+        <button id="vg-btn-novo-aluno" class="bg-brand hover:bg-brand-light text-white text-xs font-semibold px-3 py-2 rounded-xl shrink-0">+ Aluno</button>
+      </div>
+
+      <!-- Form Rápido Inserção Aluno -->
+      <form id="vg-form-aluno" class="hidden bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-md space-y-3">
+        <div class="flex justify-between items-center">
+          <h4 class="text-xs font-bold">Cadastrar Novo Aluno</h4>
+          <button type="button" class="vg-fechar-form text-xs text-slate-400">✕</button>
+        </div>
+        <div class="grid sm:grid-cols-2 gap-2">
+          <input id="vg-novo-nome" placeholder="Nome completo do aluno" required class="rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand" />
+          <select id="vg-novo-turma" class="rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-1.5 text-xs"></select>
+        </div>
+        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg">Salvar Aluno</button>
+      </form>
+
+      <!-- Seções com Dados -->
+      <div class="grid gap-4">
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500 mb-3">Professores e Suas Turmas <span id="vg-cont-professores"></span></h4>
+          <div id="vg-professores" class="space-y-2"></div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500 mb-3">Turmas e Alunos <span id="vg-cont-turmas"></span></h4>
+          <div id="vg-turmas" class="space-y-2"></div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500 mb-3">Alunos Sem Turma Atribuída <span id="vg-cont-sem-turma"></span></h4>
+          <div id="vg-sem-turma" class="space-y-1"></div>
+        </div>
+
+        <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-slate-500 mb-3">Avisos do Mural <span id="vg-cont-avisos"></span></h4>
+          <div id="vg-avisos" class="space-y-2"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Template: RELATÓRIOS -->
+  <template id="tpl-admin-relatorios">
+    <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+      <h3 class="text-sm font-bold text-slate-800 dark:text-white">Relatório Geral de Frequência</h3>
+      
+      <div class="grid sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Filtrar Turma</label>
+          <select id="rel-turma" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-2 text-xs">
+            <option value="">-- Todas as Turmas --</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Data Início</label>
+          <input type="date" id="rel-data-inicio" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-2 text-xs" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Data Fim</label>
+          <input type="date" id="rel-data-fim" class="w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 px-3 py-2 text-xs" />
+        </div>
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button id="btn-exportar-csv" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 rounded-xl shadow transition">📊 Exportar CSV (Excel)</button>
+        <button id="btn-imprimir-relatorio" class="flex-1 bg-brand hover:bg-brand-light text-white text-xs font-bold py-2.5 rounded-xl shadow transition">🖨️ Imprimir / Salvar PDF</button>
+      </div>
+
+      <div id="rel-preview" class="pt-4 overflow-x-auto"></div>
+    </div>
+  </template>
+
+  <!-- Script da Aplicação -->
+  <script src="app.js"></script>
+</body>
+</html>
